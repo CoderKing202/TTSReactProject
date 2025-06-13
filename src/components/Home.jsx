@@ -4,14 +4,15 @@ import NavBar from './NavBar'
 import { version } from 'mongoose';
 
 function Home() {
-  let spvoices = window.speechSynthesis.getVoices();
-
+  // let spvoices = window.speechSynthesis.getVoices();
+  let spvoices = responsiveVoice.getVoices()
+const [isSpeaking,setSpeaking] = useState(false)
   const [ voices, setVoices ] = useState([])
   const [membershipEndTrigger,setMembershipEndTrigger] = useState(false)
   const navigate = useNavigate()
   const [currentvoice,setCurrentVoice] = useState(voices[0])
   let synth = window.speechSynthesis
-
+  
     const [ buttonState, setState ] = useState('fas fa-play')
     const [totalletters,setTotalletters] = useState(200)
     const [isEmpty,setEmpty] = useState(false)
@@ -19,14 +20,15 @@ function Home() {
     const [text,setText] = useState("")
   const [islogin,setLogin] = useState(false)
   const [user,setUser] = useState({ version:'free' })
-  let startfunction = ()=>{
-    spvoices = window.speechSynthesis.getVoices();
+  // let startfunction = ()=>{
+  //   spvoices = window.speechSynthesis.getVoices();
     
-    setVoices([spvoices[0],spvoices[1]])
-    setCurrentVoice(spvoices[0])
-  }
+ 
+  // }
   useEffect(()=>{
     (async()=>{
+      setVoices([spvoices[0],spvoices[1]])
+      setCurrentVoice(spvoices[0])
       let membershipcancel = false
       const response = await fetch( 'http://localhost:5000/isloggedin',{credentials:'include'} )
       const result = await response.json()
@@ -39,12 +41,12 @@ function Home() {
       if(membershipCheckresult.success){
           alert(`Your ${result.user.version} membership is over If you want to use the app please renew your membership with basic or primary membership`)
           setTotalletters(200)
-          setText(text.substring(0,200))
+          setText("")
           membershipcancel = true
       }
       }
     }
-      startfunction()
+      // startfunction()
       if(result.result)
         {
             setUser(result.user)
@@ -77,7 +79,7 @@ function Home() {
         }
     })()
   },[membershipEndTrigger])
-  synth.onvoiceschanged = startfunction
+  // synth.onvoiceschanged = startfunction
 
 
  
@@ -86,13 +88,13 @@ function Home() {
 
     
     const voiceHandler=(event)=>{
-      console.log(event.target.value)
       setCurrentVoice(voices[parseInt(event.target.value)])
     }
 
     const playPause = async ()=>{
+      
       let voiceCancel = false
-      if(!synth.speaking)
+      if(!isSpeaking)
       {
       if( user.version === 'basic' || user.version === 'premium' ){
         const memebershipCheckresponse = await fetch('http://localhost:5000/membershipexpired',{credentials:'include'})
@@ -113,27 +115,81 @@ function Home() {
         }
         else{
             setEmpty(false)
-            if(!synth.speaking)
-            {
-              let utterance = new SpeechSynthesisUtterance(text);
-              utterance.onend=()=>{ setState('fas fa-play') }
-              utterance.voice = currentvoice
-              console.log(utterance.voice)
-              synth.speak(utterance);
-              if( voiceCancel )
+            if(!isSpeaking)
+            {   
+              // let utterance = new SpeechSynthesisUtterance(text);
+              if(!voiceCancel)
               {
-                synth.cancel()
-              }
+                
+              responsiveVoice.speak( text, currentvoice.name,{onend:()=>{ 
+                setState('fas fa-play')
+                setSpeaking(false)
+               },
+               onerror:()=>{
+                 alert("Cannot speak through the current voice retry by play button or reload the website")
+               },
+               onstart:()=>{
+                setState('fas fa-pause')
+                setSpeaking(true)
+                // const intervalId = setInterval(()=>{
+                 
+                //     if( !responsiveVoice.isPlaying() && !isPause ){
+                //       console.log("Hello345 ," + responsiveVoice.isPlaying()+ ", "+ isPause)
+                //       setState('fas fa-play')
+                //       setSpeaking(false)
+                //       clearInterval(intervalId)
+                  
+                //     }
+                // },1)
+                // // if( voiceCancel )
+                // {
+                //   // synth.cancel()
+                //   console.log("Sushila")
+                //   responsiveVoice.cancel()
+              
+                // }
+              }} )
+            }
+            else{
+              setSpeaking(false)
+            }              
+              
+              // utterance.onend=()=>{ setState('fas fa-play') }
+              
+              // utterance.voice = currentvoice
+
+              // console.log(utterance.voice)
+              // synth.speak(utterance);
+              
+             
             }
             if(buttonState === 'fas fa-play')
                 {
-                  setState('fas fa-pause')
-                  synth.resume(); 
+                  // setState('fas fa-pause')
+                  if(isSpeaking)
+                  {
+                    setState('fas fa-pause')
+                  }
+                  else{
+                    setState('fas fa-circle-notch fa-spin')
+                  }
+                  // synth.resume(); 
+                  if(!voiceCancel)
+                  {
+                  responsiveVoice.resume()
+                  setPause(false)
+                  }
+                  else{
+                    setState("fas fa-play")
+                  }
                 }
                 else{
+                 
                     setState('fas fa-play')
-                    
-                    synth.pause();
+                    setPause(true)                    
+                    // synth.pause();
+                    responsiveVoice.pause()
+                  
                 }
 
                 

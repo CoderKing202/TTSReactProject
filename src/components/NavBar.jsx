@@ -22,17 +22,21 @@ function NavBar() {
     <div className="collapse navbar-collapse" id="navbarSupportedContent">
       <ul className="navbar-nav ms-auto mb-2 mb-lg-0">
        { !islogin?<><li className="nav-item">
-          <Link className="nav-link text-white" aria-current="page" to="/signUp" onClick={()=>{window.speechSynthesis.cancel()}}>SignUp</Link>
+          <Link className="nav-link text-white" aria-current="page" to="/signUp" onClick={()=>{//</li>window.speechSynthesis.cancel()
+          responsiveVoice.cancel()}}>SignUp</Link>
         </li>
         <li className="nav-item">
-          <Link className="nav-link text-white" to='/login' onClick={()=>{window.speechSynthesis.cancel()}}>Login</Link>
+          <Link className="nav-link text-white" to='/login' onClick={()=>{//</li>window.speechSynthesis.cancel()
+          responsiveVoice.cancel() }}>Login</Link>
         </li></>:<>
         <li className="nav-item">
-          <Link className="nav-link text-white" to='/logout' onClick={()=>{window.speechSynthesis.cancel()}}>LogOut</Link>
+          <Link className="nav-link text-white" to='/logout' onClick={()=>{//</li>window.speechSynthesis.cancel()
+          responsiveVoice.cancel()}}>LogOut</Link>
         </li>
         </>}
         <li className="nav-item">
-          <Link className="nav-link text-white" to="/pricing" onClick={()=>{window.speechSynthesis.cancel()}}>Pricing</Link>
+          <Link className="nav-link text-white" to="/pricing" onClick={()=>{//</li>window.speechSynthesis.cancel()
+          responsiveVoice.cancel()}}>Pricing</Link>
         </li>
       </ul>
     </div>
