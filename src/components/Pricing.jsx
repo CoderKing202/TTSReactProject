@@ -66,7 +66,7 @@ const Pricing = () => {
               <p className="card-text">$0/month</p>
               <ul className="list-unstyled">
               <li style={{fontSize:'60px'}}>200 words</li>
-              <li style={{fontSize:'40px'}}>2 voices(according to Browser)</li>
+              <li style={{fontSize:'40px'}}>2 voices only</li>
               </ul>
               {/* <button className="btn btn-primary" onClick={buyhandler}>Pay Now</button> */}
             </div>
@@ -81,7 +81,7 @@ const Pricing = () => {
               <p className="card-text">$6/month</p>
               <ul className="list-unstyled">
               <li style={{fontSize:'60px'}}>1000 words</li>
-                <li style={{fontSize:'40px'}}>All voices available( according to browser )</li>
+                <li style={{fontSize:'40px'}}>All voices available</li>
               </ul>
               {membership == 'free' || membership == 'premium'?<button className="btn btn-primary" id='basic' onClick={buyhandler}>Pay Now</button>:<span style={{color:'red'}}><b>You have already taken basic membership</b></span>}
             </div>
@@ -96,7 +96,7 @@ const Pricing = () => {
               <p className="card-text">$12/month</p>
               <ul className="list-unstyled">
                 <li style={{fontSize:'60px'}}>10000 words</li>
-                <li style={{fontSize:'40px'}}>All voices available( according to browser )</li>
+                <li style={{fontSize:'40px'}}>All voices available</li>
               </ul>
               {membership === 'free' || membership === 'basic'?<button className="btn btn-primary" id="premium" onClick={buyhandler}>Pay Now</button>:<span style={{color:'red'}}><b>You have already taken Premium membership</b></span>}
             </div>
