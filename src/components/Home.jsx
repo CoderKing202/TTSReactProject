@@ -4,7 +4,8 @@ import NavBar from './NavBar'
 import { version } from 'mongoose';
 
 function Home() {
-  // let spvoices = window.speechSynthesis.getVoices();
+  let synthvoices = window.speechSynthesis.getVoices();
+  console.log(synthvoices)
   let spvoices = responsiveVoice.getVoices()
 const [isSpeaking,setSpeaking] = useState(false)
   const [ voices, setVoices ] = useState([])
@@ -22,12 +23,18 @@ const [isSpeaking,setSpeaking] = useState(false)
   const [user,setUser] = useState({ version:'free' })
   // let startfunction = ()=>{
   //   spvoices = window.speechSynthesis.getVoices();
-    
+  const  estimateSpeechDuration=(text, wpm = 130)=> {
+    const words = text.trim().split(/\s+/).length;
+    const minutes = words / wpm;
+    return minutes * 60 * 1000; // in milliseconds
+  }
+  
  
   // }
   useEffect(()=>{
     (async()=>{
       setVoices([spvoices[0],spvoices[1]])
+      console.log("enode"+navigator.language)
       setCurrentVoice(spvoices[0])
       let membershipcancel = false
       const response = await fetch( 'http://localhost:5000/isloggedin',{credentials:'include'} )
@@ -43,6 +50,7 @@ const [isSpeaking,setSpeaking] = useState(false)
           setTotalletters(200)
           setText("")
           membershipcancel = true
+          document.getElementById("playButton").disabled = false;
       }
       }
     }
@@ -106,6 +114,7 @@ const [isSpeaking,setSpeaking] = useState(false)
         voiceCancel = true
         setMembershipEndTrigger(true)
         setVoices(spvoices)
+        
     }
   }
 }
@@ -121,26 +130,37 @@ const [isSpeaking,setSpeaking] = useState(false)
               if(!voiceCancel)
               {
                 
-              responsiveVoice.speak( text, currentvoice.name,{onend:()=>{ 
+                let voiceStarted = false
+              responsiveVoice.speak( text, currentvoice.name,{
+                onend:()=>{ 
                 setState('fas fa-play')
+                document.getElementById("playButton").disabled = false;
                 setSpeaking(false)
                },
-               onerror:()=>{
-                 alert("Cannot speak through the current voice retry by play button or reload the website")
-               },
+               
                onstart:()=>{
+                voiceStarted = true
                 setState('fas fa-pause')
                 setSpeaking(true)
                 // const intervalId = setInterval(()=>{
                  
-                //     if( !responsiveVoice.isPlaying() && !isPause ){
-                //       console.log("Hello345 ," + responsiveVoice.isPlaying()+ ", "+ isPause)
+                //     if( !responsiveVoice.isPlaying()){
+                //       console.log("Hello345 ," + responsiveVoice.isPlaying())
                 //       setState('fas fa-play')
                 //       setSpeaking(false)
+                //       document.getElementById("playButton").disabled = false;
                 //       clearInterval(intervalId)
                   
                 //     }
                 // },1)
+                setTimeout(()=>{
+                  console.log("Hello345 ," + responsiveVoice.isPlaying())
+                      setState('fas fa-play')
+                      setSpeaking(false)
+                      document.getElementById("playButton").disabled = false;
+                      
+                },estimateSpeechDuration(text))
+                
                 // // if( voiceCancel )
                 // {
                 //   // synth.cancel()
@@ -149,11 +169,12 @@ const [isSpeaking,setSpeaking] = useState(false)
               
                 // }
               }} )
+         
             }
             else{
               setSpeaking(false)
             }              
-              
+          
               // utterance.onend=()=>{ setState('fas fa-play') }
               
               // utterance.voice = currentvoice
@@ -166,6 +187,7 @@ const [isSpeaking,setSpeaking] = useState(false)
             if(buttonState === 'fas fa-play')
                 {
                   // setState('fas fa-pause')
+                  document.getElementById("playButton").disabled = true;
                   if(isSpeaking)
                   {
                     setState('fas fa-pause')
@@ -181,6 +203,7 @@ const [isSpeaking,setSpeaking] = useState(false)
                   }
                   else{
                     setState("fas fa-play")
+                    document.getElementById("playButton").disabled = false;
                   }
                 }
                 else{
@@ -222,7 +245,7 @@ const [isSpeaking,setSpeaking] = useState(false)
 </div>
 
 <div id="voicebuttons">
-<button type="button" style={{width:'42px',marginBottom:20}} className="btn btn-danger" onClick={playPause}><i className={buttonState}></i></button>
+<button type="button" style={{width:'42px',marginBottom:20}} className="btn btn-danger" id="playButton" onClick={playPause}><i className={buttonState}></i></button>
 </div>
     </div>
     </>
