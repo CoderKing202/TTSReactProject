@@ -2,47 +2,48 @@ import React, { use, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import NavBar from "./NavBar";
 import { version } from "mongoose";
+import { FaCrown } from 'react-icons/fa'
 
 function Home() {
   let spvoices = responsiveVoice.getVoices();
-  
   const [voices, setVoices] = useState([]);
   const [membershipEndTrigger, setMembershipEndTrigger] = useState(false);
   const navigate = useNavigate();
   const [currentvoice, setCurrentVoice] = useState(voices[0]);
+  const [selectedOption,setSelectedOption] = useState("choose") 
   let synth = window.speechSynthesis;
-
   const [buttonState, setState] = useState("fas fa-play");
   const [isPlay, setPlay] = useState(false);
   const [totalletters, setTotalletters] = useState(200);
   const [isEmpty, setEmpty] = useState(false);
-
   const [text, setText] = useState("");
-  const [islogin, setLogin] = useState(false);
+  const [loginResult, setLoginResult] = useState({});
   const [user, setUser] = useState({ version: "free" });
+  
+
 
   useEffect(() => {
     (async () => {
-      setVoices([spvoices[0], spvoices[1]]);
-      console.log("enode" + navigator.language);
+      setVoices(spvoices);
       setCurrentVoice(spvoices[0]);
       let membershipcancel = false;
       const response = await fetch("http://localhost:5000/isloggedin", {
         credentials: "include",
       });
       const result = await response.json();
-
+      setLoginResult(result)
       if (result.result) {
         if (
           result.user.version === "basic" ||
           result.user.version === "premium"
         ) {
           console.log("Hello 300");
-          const memebershipCheckresponse = await fetch(
+          setUser(result.user);
+          const membershipCheckresponse = await fetch(
             "http://localhost:5000/membershipexpired",
             { credentials: "include" }
           );
-          const membershipCheckresult = await memebershipCheckresponse.json();
+          const membershipCheckresult = await membershipCheckresponse.json();
           if (membershipCheckresult.success) {
             alert(
               `Your ${result.user.version} membership is over If you want to use the app please renew your membership with basic or primary membership`
@@ -51,28 +52,30 @@ function Home() {
             setText("");
             membershipcancel = true;
             document.getElementById("playButton").disabled = false;
+            setUser({version:'free',name:result.user.name})
           }
         }
-      }
-
-      if (result.result) {
-        setUser(result.user);
+        else{
+          setUser(result.user);
+        }
+      
+        
         if (result.user.version === "basic") {
           if (membershipcancel) {
             setTotalletters(200);
-            setVoices([spvoices[0], spvoices[1]]);
+            
           } else {
             setTotalletters(1000);
-            setVoices(spvoices);
+            
           }
         }
         if (result.user.version === "premium") {
           if (membershipcancel) {
             setTotalletters(200);
-            setVoices([spvoices[0], spvoices[1]]);
+            
           } else {
             setTotalletters(10000);
-            setVoices(spvoices);
+            
           }
         }
       }
@@ -80,18 +83,49 @@ function Home() {
   }, [membershipEndTrigger]);
 
   const voiceHandler = (event) => {
-    setCurrentVoice(voices[parseInt(event.target.value)]);
+    if(user.version === 'basic' || user.version === 'premium' )
+    {
+      setSelectedOption(event.target.value)
+      if(event.target.value !== 'choose')
+      {
+      setCurrentVoice(voices[parseInt(event.target.value)]);
+      }
+      else{
+        setCurrentVoice(voices[0]);
+      }
+    }
+    else if(user.version === 'free'){
+      if(event.target.value <= 1)
+      {
+      console.log(event.target.value)
+      setSelectedOption(event.target.value)
+      setCurrentVoice(voices[parseInt(event.target.value)]);
+      }
+      else
+      {
+        if((event.target.value !== 'choose')){
+          if(!loginResult.result)
+          {
+            alert(`If you want to use "${voices[parseInt(event.target.value)].name}" voice then login and take premium or basic membership`)
+          }
+          else{
+            alert(`${loginResult.user.name} if you want to use "${voices[parseInt(event.target.value)].name}" voice then take premium or basic membership`)
+          }
+        }
+        setSelectedOption("choose")
+          setCurrentVoice(voices[0]);
+      }
+    }
   };
 
   const playPause = async () => {
     let voiceCancel = false;
-    
       if (user.version === "basic" || user.version === "premium") {
-        const memebershipCheckresponse = await fetch(
+        const membershipCheckresponse = await fetch(
           "http://localhost:5000/membershipexpired",
           { credentials: "include" }
         );
-        const membershipCheckresult = await memebershipCheckresponse.json();
+        const membershipCheckresult = await membershipCheckresponse.json();
         if (membershipCheckresult.success) {
           alert(
             `Your ${user.version} membership is over If you want to use the app please renew your membership with basic or primary membership`
@@ -101,6 +135,8 @@ function Home() {
           voiceCancel = true;
           setMembershipEndTrigger(true);
           setVoices(spvoices);
+          setUser({version:'free'})
+          setSelectedOption('choose')
         }
       }
     
@@ -153,14 +189,16 @@ function Home() {
           className="form-select"
           aria-label="Default select example"
           id="voiceselector"
+          value={selectedOption}
           onChange={voiceHandler}
+          style={{textAlign:'center'}}
         >
-          <option value="0">Choose Voices</option>
+          <option value="choose">Choose Voices</option>
           {voices.map((voice, id) => {
             return (
-              <option key={id} value={id}>
-                {id == 0 ? <>{voice.name}(Default)</> : voice.name}
-              </option>
+                <>
+                {(id == 0)? <option key={id} value={id}>{voice.name}(Default)</option> :(user.version === 'basic' || user.version === 'premium')?<option key={id} value={id}>{voice.name}</option>:(id >= 2)?<option key={id} className='bg-primary'value={id} style={{color:'#ffffff',fontWeight:'bold'}}> 👑&nbsp;&nbsp;&nbsp;&nbsp;{voice.name}</option>:<option key={id} value={id}>{voice.name}</option>}
+                </>
             );
           })}
         </select>
